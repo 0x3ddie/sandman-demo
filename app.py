@@ -16,6 +16,7 @@ COUNTRY_CONFIG = {
     "CA": ("CAD", 0),
     "GB": ("GBP", 1800),
 }
+SUPPORTED_COUNTRIES = frozenset({"US", "CA", "GB"})
 
 
 class QuoteError(ValueError):
@@ -36,10 +37,9 @@ def calculate_quote(subtotal_cents: int, country: str) -> Quote:
     if not 0 < subtotal_cents <= 1_000_000:
         raise QuoteError("subtotal_cents must be between 1 and 1000000")
     normalized_country = country.strip().upper()
-    try:
-        currency, shipping_cents = COUNTRY_CONFIG[normalized_country]
-    except KeyError as error:
-        raise QuoteError("country must be one of US, CA, or GB") from error
+    if normalized_country not in SUPPORTED_COUNTRIES:
+        raise QuoteError("country must be one of US, CA, or GB")
+    currency, shipping_cents = COUNTRY_CONFIG[normalized_country]
     return Quote(
         currency=currency,
         subtotal_cents=subtotal_cents,
