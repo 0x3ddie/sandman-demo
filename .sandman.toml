@@ -1,0 +1,25 @@
+version = 1
+repository_url = "https://github.com/0x3ddie/sandman-demo"
+runtime = "modal"
+modal_app_name = "sandman-northstar-probes"
+
+[service]
+startup_command = ["python", "app.py"]
+port = 8000
+health_path = "/health"
+container_image = "python:3.12-slim"
+
+[probes.canada-checkout]
+method = "POST"
+path = "/api/checkout/quote"
+expected_status = 200
+timeout_seconds = 20
+
+[probes.canada-checkout.json_body]
+subtotal_cents = 12800
+country = "CA"
+
+[probes.canada-checkout.expected_json]
+currency = "CAD"
+shipping_cents = 0
+total_cents = 12800

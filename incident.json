@@ -1,0 +1,25 @@
+{
+  "trace_id": "northstar-ca-checkout-500",
+  "redacted": true,
+  "method": "POST",
+  "path": "/api/checkout/quote",
+  "json_body": {
+    "subtotal_cents": 12800,
+    "country": "CA"
+  },
+  "observed": {
+    "status_code": 500,
+    "json_body": {
+      "error": "We could not refresh your total. Please try again."
+    }
+  },
+  "expected_status": 200,
+  "expected_json": {
+    "currency": "CAD",
+    "shipping_cents": 0,
+    "total_cents": 12800
+  },
+  "logs": [
+    "Checkout quote failed while resolving the CA destination configuration"
+  ]
+}

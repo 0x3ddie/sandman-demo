@@ -1,0 +1,6 @@
+{
+  "draft_reviews": true,
+  "update_existing_review": true,
+  "review_trigger": "automatic",
+  "review_on_push": true
+}

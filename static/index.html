@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Northstar Supply makes considered travel goods for weekends away."
+    />
+    <title>Northstar Supply · Trail Weekender</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="announcement">Complimentary shipping to Canada this week</div>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Northstar Supply home">
+        <span class="brand-mark">N</span>
+        <span>NORTHSTAR SUPPLY</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#details">New arrivals</a>
+        <a href="#story">Our story</a>
+        <button class="bag-button" type="button">Bag <span>1</span></button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="product-shell" id="details">
+        <div class="product-visual" aria-label="Olive canvas weekender bag">
+          <div class="edition">FIELD NOTES / 024</div>
+          <div class="bag-art" role="img" aria-label="Trail Weekender in alpine olive">
+            <div class="handle handle-left"></div>
+            <div class="handle handle-right"></div>
+            <div class="bag-body">
+              <div class="bag-pocket"></div>
+              <div class="brand-stamp">NORTHSTAR<br />SUPPLY CO.</div>
+            </div>
+          </div>
+          <div class="visual-caption">
+            <span>Waxed canvas</span>
+            <span>42 L</span>
+            <span>Alpine olive</span>
+          </div>
+        </div>
+
+        <div class="product-copy">
+          <p class="eyebrow">The travel collection</p>
+          <h1>Trail Weekender</h1>
+          <p class="price">$128</p>
+          <p class="lede">
+            A quietly capable carryall cut from weather-ready canvas, with room for a long
+            weekend and none of the unnecessary bulk.
+          </p>
+
+          <div class="color-row">
+            <span>Color</span>
+            <strong>Alpine olive</strong>
+            <div class="swatches" aria-label="Available colors">
+              <button class="swatch olive selected" aria-label="Alpine olive"></button>
+              <button class="swatch clay" aria-label="High desert clay"></button>
+              <button class="swatch ink" aria-label="Night ink"></button>
+            </div>
+          </div>
+
+          <div class="shipping-card">
+            <div class="shipping-heading">
+              <div>
+                <p class="eyebrow">Delivery estimate</p>
+                <h2>Ready for the road</h2>
+              </div>
+              <span class="stock"><i></i> In stock</span>
+            </div>
+            <label for="country">Shipping destination</label>
+            <div class="select-wrap">
+              <select id="country" name="country">
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="GB">United Kingdom</option>
+              </select>
+            </div>
+            <div class="quote" aria-live="polite">
+              <div><span>Weekender</span><strong id="subtotal">$128.00</strong></div>
+              <div><span>Shipping</span><strong id="shipping">—</strong></div>
+              <div class="total"><span>Estimated total</span><strong id="total">—</strong></div>
+              <p id="quote-status" class="quote-status">Calculating your delivery total…</p>
+            </div>
+            <button id="add-to-bag" class="primary-button" type="button">Add to bag</button>
+            <p class="fine-print">Free returns within 30 days · Secure checkout</p>
+          </div>
+
+          <details>
+            <summary>Materials & care</summary>
+            <p>12 oz waxed cotton canvas, vegetable-tanned leather, solid brass hardware.</p>
+          </details>
+          <details>
+            <summary>Dimensions</summary>
+            <p>21 × 12 × 10 in · Cabin-friendly on most major airlines.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="story" id="story">
+        <p class="eyebrow">Built for leaving well</p>
+        <h2>Objects that earn their place.</h2>
+        <p>
+          We design practical travel goods in small runs, choosing repairable construction
+          and materials that improve with every mile.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 Northstar Supply Co.</span>
+      <span>Demo storefront · No real orders are processed</span>
+    </footer>
+    <script src="/app.js" defer></script>
+  </body>
+</html>
