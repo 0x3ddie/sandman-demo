@@ -37,38 +37,42 @@ curl -X POST http://127.0.0.1:8000/api/checkout/quote \
   configuration regression returns HTTP 500 for Canada.
 - `sandman/*`: candidate branches published by the remediation workflow.
 
-## Run the zero-secret incident demo
+## Run the incident demo
 
-No OpenAI or Modal API credentials are required. The workflow transparently labels candidate
-generation and the three sandbox observations as deterministic simulations. It still publishes
-a real candidate branch, GitHub Check, and draft pull request for the installed Greptile app.
+When `OPENAI_API_KEY` exists, candidate generation uses the pinned Codex action; otherwise it
+falls back to the transparently labeled deterministic generator. When `MODAL_TOKEN_ID` and
+`MODAL_TOKEN_SECRET` exist, verification uses three real Modal Sandboxes; otherwise it uses the
+explicitly simulated runtime. Every path publishes a real candidate branch, GitHub Check, and
+draft pull request for Greptile.
 
-Open a pull request from `production` into `main` and comment:
+For the one-click path, open **Actions → Sandman incident remediation**, choose **Run
+workflow**, and confirm. The workflow opens or reuses the `production` → `main` incident pull
+request and runs the entire remediation sequence.
+
+The pull request comment path remains available for an existing incident PR:
 
 ```text
 /sandman probe=canada-checkout known-good=known-good@59da828d7d2f76ff1089caec29b827d0902fce9f
 ```
 
 Sandman generates the known demo candidate, publishes it on a `sandman/*` branch, runs the
-three-lane deterministic verdict, posts a GitHub Check, and opens the verified hotfix as a
-draft pull request for Greptile to review.
+three-lane verdict, posts a GitHub Check, and opens the verified hotfix as a draft pull request
+for Greptile to review.
 
-For the production-authentic path, replace the deterministic generation step with the pinned
-Codex action and run the same comparison with `--runtime modal`. That path requires
-`OPENAI_API_KEY`, `MODAL_TOKEN_ID`, and `MODAL_TOKEN_SECRET` as GitHub Actions secrets.
+Fully API-backed runs require all three GitHub Actions secrets: `OPENAI_API_KEY`,
+`MODAL_TOKEN_ID`, and `MODAL_TOKEN_SECRET`.
 
 ### What to show during the demo
 
 1. Open the live production storefront and change the destination to **Canada** to reproduce
    the quiet checkout failure.
-2. Open the `production` → `main` pull request and show its failing storefront check.
-3. Paste the `/sandman` command above as a pull request comment.
-4. Open **Actions → Sandman comment remediation** to watch generation, publication, and
-   verification complete.
+2. Open **Actions → Sandman incident remediation** and click **Run workflow**.
+3. Open the automatically created `production` → `main` incident pull request.
+4. Return to the Action to watch generation, publication, and verification complete.
 5. Open the resulting `sandman/*` draft pull request and show the three-lane Check and
    Greptile review.
 
-Nothing needs to be entered in a terminal for this flow.
+Nothing needs to be entered in a terminal for the one-click flow.
 
 ## Deploy the intentionally broken production branch
 
