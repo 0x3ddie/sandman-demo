@@ -6,7 +6,7 @@ from app import QuoteError, calculate_quote
 
 
 def test_canadian_quote_uses_cad_and_complimentary_shipping() -> None:
-    quote = calculate_quote(12_800, "ca")
+    quote = calculate_quote(12_800, "CA")
 
     assert quote.currency == "CAD"
     assert quote.shipping_cents == 0
