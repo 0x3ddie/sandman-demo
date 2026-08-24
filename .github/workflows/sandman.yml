@@ -1,26 +1,61 @@
 name: Sandman incident remediation
 
 on:
+  push:
+    branches: [production]
   workflow_dispatch:
   issue_comment:
     types: [created]
 
 concurrency:
   group: >-
-    sandman-${{ github.repository }}-${{ github.event.issue.number || github.run_id }}
+    sandman-${{ github.repository }}-${{ github.event.issue.number || github.event.after || github.run_id }}
   cancel-in-progress: false
 
 env:
   SANDMAN_SOURCE: git+https://github.com/0x3ddie/sandman.git@d2af9cc183c41aaae250906ab29d6c7f203f0984
 
 jobs:
+  deploy:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+    steps:
+      - name: Check out exact production revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.1"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Deploy exact production revision to Modal
+        run: uv run modal deploy modal_app.py
+
   generate:
+    needs: deploy
     if: >-
+      always() &&
+      (needs.deploy.result == 'success' || needs.deploy.result == 'skipped') &&
+      ((github.event_name == 'push' &&
+      !contains(github.event.head_commit.message, '[skip sandman]')) ||
       github.event_name == 'workflow_dispatch' ||
       (github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '/sandman') &&
       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'),
-      github.event.comment.author_association))
+      github.event.comment.author_association)))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -61,10 +96,13 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: sandman github-context --event "$GITHUB_EVENT_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Open or reuse the demo incident pull request
-        if: github.event_name == 'workflow_dispatch'
-        id: manual_context
+      - name: Open or reuse the production incident pull request
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        id: deployment_context
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_SHA: ${{ github.sha }}
         with:
           github-token: ${{ github.token }}
           script: |
@@ -85,22 +123,26 @@ jobs:
               head: `${context.repo.owner}:production`,
               base: 'main',
             });
+            const currentSha = process.env.EVENT_NAME === 'push'
+              ? process.env.PUSH_SHA
+              : production.data.commit.sha;
             const pullRequest = existing.data[0] ?? (await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head: 'production',
               base: 'main',
-              title: 'refactor: normalize regional pricing keys',
+              title: 'incident: production checkout regression',
               body: [
-                'Standardizes the regional pricing map before the next international rollout.',
+                'Sandman opened this incident automatically from a production deployment.',
                 '',
-                'This pull request is the intentionally failing input for the Sandman demo.',
+                'The Canada checkout probe will compare the deployed revision with the ' +
+                  'known-good baseline before proposing a hotfix.',
               ].join('\n'),
             })).data;
             core.setOutput('probe', 'canada-checkout');
             core.setOutput('known_good', `known-good@${knownGood.data.commit.sha}`);
-            core.setOutput('current', `production@${production.data.commit.sha}`);
-            core.setOutput('current_sha', production.data.commit.sha);
+            core.setOutput('current', `production@${currentSha}`);
+            core.setOutput('current_sha', currentSha);
             core.setOutput('current_ref', 'production');
             core.setOutput('pull_request_number', String(pullRequest.number));
 
@@ -115,15 +157,17 @@ jobs:
           COMMENT_CURRENT_SHA: ${{ steps.comment_context.outputs.current_sha }}
           COMMENT_CURRENT_REF: ${{ steps.comment_context.outputs.current_ref }}
           COMMENT_PR_NUMBER: ${{ steps.comment_context.outputs.pull_request_number }}
-          MANUAL_PROBE: ${{ steps.manual_context.outputs.probe }}
-          MANUAL_KNOWN_GOOD: ${{ steps.manual_context.outputs.known_good }}
-          MANUAL_CURRENT: ${{ steps.manual_context.outputs.current }}
-          MANUAL_CURRENT_SHA: ${{ steps.manual_context.outputs.current_sha }}
-          MANUAL_CURRENT_REF: ${{ steps.manual_context.outputs.current_ref }}
-          MANUAL_PR_NUMBER: ${{ steps.manual_context.outputs.pull_request_number }}
+          DEPLOYMENT_PROBE: ${{ steps.deployment_context.outputs.probe }}
+          DEPLOYMENT_KNOWN_GOOD: ${{ steps.deployment_context.outputs.known_good }}
+          DEPLOYMENT_CURRENT: ${{ steps.deployment_context.outputs.current }}
+          DEPLOYMENT_CURRENT_SHA: ${{ steps.deployment_context.outputs.current_sha }}
+          DEPLOYMENT_CURRENT_REF: ${{ steps.deployment_context.outputs.current_ref }}
+          DEPLOYMENT_PR_NUMBER: ${{ steps.deployment_context.outputs.pull_request_number }}
         with:
           script: |
-            const prefix = process.env.EVENT_NAME === 'workflow_dispatch' ? 'MANUAL' : 'COMMENT';
+            const prefix = process.env.EVENT_NAME === 'issue_comment'
+              ? 'COMMENT'
+              : 'DEPLOYMENT';
             for (const name of [
               'PROBE', 'KNOWN_GOOD', 'CURRENT', 'CURRENT_SHA', 'CURRENT_REF', 'PR_NUMBER',
             ]) {
@@ -365,7 +409,9 @@ jobs:
 
   notify:
     if: >-
-      always() && (github.event_name == 'workflow_dispatch' ||
+      always() && ((github.event_name == 'push' &&
+      !contains(github.event.head_commit.message, '[skip sandman]')) ||
+      github.event_name == 'workflow_dispatch' ||
       (github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '/sandman') &&
       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'),

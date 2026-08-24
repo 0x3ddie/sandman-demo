@@ -4,10 +4,11 @@ Northstar is a realistic but side-effect-free storefront used to demonstrate San
 production debugging workflow. No payments, accounts, customer data, databases, email, or
 other external services are present.
 
-The default page looks and behaves normally for US shipping. The intentionally broken
-`production` branch fails only when the delivery country is changed to Canada. Sandman
-replays that exact contract against `known-good`, `production`, and a candidate hotfix in
-separate Modal Sandboxes.
+The default page looks and behaves normally, including Canadian shipping. The staged
+`demo-bug` branch contains a one-character regression that fails only when the delivery
+country is changed to Canada. Pushing that branch to `production` deploys the regression and
+starts Sandman automatically. Sandman replays the exact contract against `known-good`,
+`production`, and a candidate hotfix in separate Modal Sandboxes.
 
 **Live production:**
 [Northstar Supply on Modal](https://echen1246-1--northstar-demo-production-storefront.modal.run)
@@ -33,8 +34,10 @@ curl -X POST http://127.0.0.1:8000/api/checkout/quote \
   returns CAD with complimentary shipping.
 - [`main`](https://github.com/0x3ddie/sandman-demo/tree/main): the healthy storefront plus
   CI and Sandman workflow configuration.
-- [`production`](https://github.com/0x3ddie/sandman-demo/tree/production): a one-character
-  configuration regression returns HTTP 500 for Canada.
+- [`production`](https://github.com/0x3ddie/sandman-demo/tree/production): the currently
+  deployed, healthy storefront before the demo begins.
+- [`demo-bug`](https://github.com/0x3ddie/sandman-demo/tree/demo-bug): the staged one-character
+  Canada pricing regression used to start the incident.
 - `sandman/*`: candidate branches published by the remediation workflow.
 
 ## Run the incident demo
@@ -45,9 +48,15 @@ falls back to the transparently labeled deterministic generator. When `MODAL_TOK
 explicitly simulated runtime. Every path publishes a real candidate branch, GitHub Check, and
 draft pull request for Greptile.
 
-For the one-click path, open **Actions → Sandman incident remediation**, choose **Run
-workflow**, and confirm. The workflow opens or reuses the `production` → `main` incident pull
-request and runs the entire remediation sequence.
+Start the clean demo with one production push:
+
+```bash
+git push origin demo-bug:production
+```
+
+That push deploys the exact production revision to Modal, opens the `production` → `main`
+incident pull request, and runs the entire remediation sequence. **Run workflow** remains
+available as a rehearsal fallback.
 
 The pull request comment path remains available for an existing incident PR:
 
@@ -64,20 +73,12 @@ Fully API-backed runs require all three GitHub Actions secrets: `OPENAI_API_KEY`
 
 ### What to show during the demo
 
-1. Open the live production storefront and change the destination to **Canada** to reproduce
-   the quiet checkout failure.
-2. Open **Actions → Sandman incident remediation** and click **Run workflow**.
-3. Open the automatically created `production` → `main` incident pull request.
-4. Return to the Action to watch generation, publication, and verification complete.
+1. Open the live production storefront and show that **Canada** works.
+2. Push `demo-bug` to `production` and watch **Actions → Sandman incident remediation** start.
+3. Refresh the storefront and reproduce the newly deployed checkout failure.
+4. Show the three tagged executions in the `sandman-northstar-probes` Modal App.
 5. Open the resulting `sandman/*` draft pull request and show the three-lane Check and
    Greptile review.
 
-Nothing needs to be entered in a terminal for the one-click flow.
-
-## Deploy the intentionally broken production branch
-
-```bash
-modal deploy modal_app.py
-```
-
-The app scales to zero when idle and does not receive real traffic or secrets.
+The app scales to zero when idle and does not receive real traffic or secrets. Sandman does
+not merge the verified draft automatically; production changes only after human approval.
