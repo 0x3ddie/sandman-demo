@@ -181,7 +181,7 @@ jobs:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           permission-profile: ":workspace"
           safety-strategy: drop-sudo
-          codex-args: '["--ephemeral", "--ignore-rules"]'
+          codex-args: '["--ephemeral"]'
           output-file: ${{ runner.temp }}/codex-summary.md
           prompt: |
             Prepare the smallest production-safe candidate hotfix for the exact checked-out
