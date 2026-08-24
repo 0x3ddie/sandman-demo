@@ -13,7 +13,7 @@ MAX_REQUEST_BYTES = 64 * 1024
 
 COUNTRY_CONFIG = {
     "US": ("USD", 1200),
-    "ca": ("CAD", 0),
+    "CA": ("CAD", 0),
     "GB": ("GBP", 1800),
 }
 SUPPORTED_COUNTRIES = frozenset({"US", "CA", "GB"})

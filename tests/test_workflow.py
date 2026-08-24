@@ -1,0 +1,34 @@
+import json
+from pathlib import Path
+
+
+def test_incident_workflow_supports_automatic_deploy_and_modal_fallback() -> None:
+    workflow = Path(".github/workflows/sandman.yml").read_text(encoding="utf-8")
+
+    assert "push:\n    branches: [production]" in workflow
+    assert "workflow_dispatch:" in workflow
+    assert "Deploy exact production revision to Modal" in workflow
+    assert "Open or reuse the production incident pull request" in workflow
+    assert "Generate bounded candidate with Codex" in workflow
+    assert "Run three real Modal Sandbox probes" in workflow
+    assert "Run deterministic three-lane demo verification" in workflow
+    assert "openai/codex-action@86365089eb2b84e0a8fb0717b304f8bdcb13b20e" in workflow
+    assert "--ignore-rules" not in workflow
+    assert "[skip sandman]" in workflow
+
+    generate = workflow.split("\n  generate:\n", maxsplit=1)[1].split("\n  publish:\n", maxsplit=1)[
+        0
+    ]
+    assert "needs: deploy" in generate
+    assert "github.event_name == 'push'" in generate
+
+    notify = workflow.split("\n  notify:\n", maxsplit=1)[1]
+    assert "permissions:\n      issues: write\n      pull-requests: write" in notify
+
+
+def test_greptile_reviews_verified_draft_candidates() -> None:
+    config = json.loads(Path("greptile.json").read_text(encoding="utf-8"))
+
+    assert config["triggerOnDrafts"] is True
+    assert config["triggerOnUpdates"] is True
+    assert config["statusCheck"] is True
