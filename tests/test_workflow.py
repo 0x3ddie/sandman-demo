@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 
@@ -14,3 +15,11 @@ def test_incident_workflow_supports_one_click_and_modal_fallback() -> None:
 
     notify = workflow.split("\n  notify:\n", maxsplit=1)[1]
     assert "permissions:\n      issues: write\n      pull-requests: write" in notify
+
+
+def test_greptile_reviews_verified_draft_candidates() -> None:
+    config = json.loads(Path("greptile.json").read_text(encoding="utf-8"))
+
+    assert config["triggerOnDrafts"] is True
+    assert config["triggerOnUpdates"] is True
+    assert config["statusCheck"] is True

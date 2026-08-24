@@ -193,7 +193,7 @@ jobs:
             correct the root cause, and retain or add a focused regression test. Run the narrowest
             relevant checks and report what ran. Do not commit, push, use network access, change
             `.github`, `.git`, `.env*`, `AGENTS.md`, credentials, keys, vendored dependencies, or
-            Sandman's control files. Do not weaken tests or validation.
+            Sandman's control files, or `greptile.json`. Do not weaken tests or validation.
 
       - name: Generate deterministic demo candidate
         if: env.HAS_OPENAI_KEY != 'true'
@@ -230,7 +230,7 @@ jobs:
                 ;;
             esac
             case "$name" in
-              .env*|agents.md|*.key|*.pem|*.p12|*.pfx)
+              .env*|agents.md|greptile.json|*.key|*.pem|*.p12|*.pfx)
                 echo "Codex changed protected path: $path" >&2
                 exit 1
                 ;;
