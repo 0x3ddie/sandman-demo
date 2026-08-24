@@ -35,26 +35,40 @@ curl -X POST http://127.0.0.1:8000/api/checkout/quote \
   CI and Sandman workflow configuration.
 - [`production`](https://github.com/0x3ddie/sandman-demo/tree/production): a one-character
   configuration regression returns HTTP 500 for Canada.
-- `sandman/*`: generated candidates are published only after bounded Codex generation.
+- `sandman/*`: candidate branches published by the remediation workflow.
 
-## Run the full incident workflow
+## Run the zero-secret incident demo
 
-The repository needs these GitHub Actions secrets:
+No OpenAI or Modal API credentials are required. The workflow transparently labels candidate
+generation and the three sandbox observations as deterministic simulations. It still publishes
+a real candidate branch, GitHub Check, and draft pull request for the installed Greptile app.
 
-- `OPENAI_API_KEY`
-- `MODAL_TOKEN_ID`
-- `MODAL_TOKEN_SECRET`
-
-Greptile must also have access to this repository. Then open a pull request from
-`production` into `main` and comment:
+Open a pull request from `production` into `main` and comment:
 
 ```text
 /sandman probe=canada-checkout known-good=known-good@59da828d7d2f76ff1089caec29b827d0902fce9f
 ```
 
-Sandman asks Codex for a bounded candidate, publishes the patch on a `sandman/*` branch,
-probes all three exact revisions in isolated Modal Sandboxes, posts a GitHub Check, and
-opens the verified hotfix as a draft pull request for Greptile to review.
+Sandman generates the known demo candidate, publishes it on a `sandman/*` branch, runs the
+three-lane deterministic verdict, posts a GitHub Check, and opens the verified hotfix as a
+draft pull request for Greptile to review.
+
+For the production-authentic path, replace the deterministic generation step with the pinned
+Codex action and run the same comparison with `--runtime modal`. That path requires
+`OPENAI_API_KEY`, `MODAL_TOKEN_ID`, and `MODAL_TOKEN_SECRET` as GitHub Actions secrets.
+
+### What to show during the demo
+
+1. Open the live production storefront and change the destination to **Canada** to reproduce
+   the quiet checkout failure.
+2. Open the `production` → `main` pull request and show its failing storefront check.
+3. Paste the `/sandman` command above as a pull request comment.
+4. Open **Actions → Sandman comment remediation** to watch generation, publication, and
+   verification complete.
+5. Open the resulting `sandman/*` draft pull request and show the three-lane Check and
+   Greptile review.
+
+Nothing needs to be entered in a terminal for this flow.
 
 ## Deploy the intentionally broken production branch
 
