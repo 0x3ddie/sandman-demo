@@ -1,0 +1,8 @@
+{
+  "strictness": 2,
+  "commentTypes": ["logic", "syntax", "style"],
+  "triggerOnDrafts": true,
+  "triggerOnUpdates": true,
+  "statusCheck": true,
+  "instructions": "Prioritize production correctness, input validation, and regressions adjacent to the verified probe. Do not suggest weakening tests or validation."
+}
